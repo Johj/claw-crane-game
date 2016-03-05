@@ -11,9 +11,9 @@
 #define STEPS_PER_REVOLUTION 200
 #define SPEED 80
 #define STEPS 80
-#define STEP_TYPE DOUBLE
+#define STEP_TYPE DOUBLE // 2x the torque
 
-// Allocate
+// Allocate motors
 AF_Stepper motorX(STEPS_PER_REVOLUTION, PIN_MOTORX);
 AF_Stepper motorY(STEPS_PER_REVOLUTION, PIN_MOTORY);
 
@@ -33,15 +33,14 @@ void setup() {
   motorX.setSpeed(SPEED);
   motorY.setSpeed(SPEED);
   
-  Serial.begin(9600);
+  // Serial.begin(9600);
 }
 
 void loop() {
   for(int col = 0; col < 3 ; ++col){
     int voltage = analogRead(col + PIN_KEYPAD);
     int row = getRow(voltage);
-   /* 
-    if(voltage > 125) {
+    /*if(voltage > 125) {
       Serial.print("Col = ");
       Serial.print(col);
       Serial.print(" Voltage = ");
@@ -51,30 +50,31 @@ void loop() {
       Serial.println();
     }*/
     // If button is pressed and not the same as the previously pressed button.
+    // Keypad is upside down, so col is flipped : [2 1 0] arrangement instead of [0 1 2]
     if(row != -1) {
-      if(row == 0) { // first row - 123
-        if(col == 0) { // 1 - left
-           //Serial.println("Move LEFT");
+      if(row == 0) { // first row - #0*
+        if(col == 0) { // * - Right
+           // Serial.println("Move RIGHT");
            motorX.step(STEPS, BACKWARD, STEP_TYPE);
         }
-        else if(col == 1) { // 2 - up
-          //Serial.println("Move UP");
+        else if(col == 1) { // 0 - up
+          // Serial.println("Move UP");
           motorY.step(STEPS, BACKWARD, STEP_TYPE);
         }
-        else if(col == 2) { // 3 - right
-          //Serial.println("Move RIGHT");
+        else if(col == 2) { // # - Left
+          // Serial.println("Move LEFT");
           motorX.step(STEPS, FORWARD, STEP_TYPE);
         }
       }
       else if(row == 1) { // second row - 456
         if(col == 1) { // 5 - down
-          //Serial.println("Move DOWN");
+          // Serial.println("Move DOWN");
           motorY.step(STEPS, FORWARD, STEP_TYPE);
         }
       }
       break;
     }
-    // Release torque to prevent overheating.
+    // Release torque if no button activity to prevent overheating.
     else {
       motorX.release();
       motorY.release();
