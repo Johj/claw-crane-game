@@ -18,12 +18,14 @@
 #define ANGLE_I 50
 #define ANGLE_F 175
 
+// IR Sensor Constants
+#define PIN_SENSOR A4
+
 // Allocate
 AF_Stepper motorZ(STEPS_PER_REVOLUTION, PIN_MOTORZ);
 Servo hitec;
 
 // Functions
-
 void setup() {
   motorZ.setSpeed(SPEED);
   hitec.attach(PIN_SERVO, MIN_PULSE, MAX_PULSE);
@@ -46,15 +48,27 @@ void loop() {
     }*/
     // If button is pressed and not the same as the previously pressed button.
     if(voltage > 125) {
-        if(col == 0) { // 1 - down
+        if(col == 0) { // 1
           // Serial.println("Move DOWN");
-          motorZ.step(STEPS, BACKWARD, STEP_TYPE);
+          while(analogRead(PIN_SENSOR) > 290) {
+             // Serial.println(analogRead(PIN_SENSOR));
+             motorZ.step(STEPS, BACKWARD, STEP_TYPE);
+          }
+          
+          // hook
+          hitec.write(ANGLE_F);
+          delay(1000);
+
+          // Serial.println("Move UP");
+          while(analogRead(PIN_SENSOR) < 600){
+             motorZ.step(STEPS, FORWARD, STEP_TYPE);
+          }
         }
-        else if(col == 1) { // 2 - up
+        else if(col == 1) { // 2
           // Serial.println("Move UP");
           motorZ.step(STEPS, FORWARD, STEP_TYPE);
         }
-        else if(col == 2) { // 3 - hook
+        else if(col == 2) { // 3
           // Serial.println("Move HOOK");
           if(hitec.read() == ANGLE_F){
             hitec.write(ANGLE_I);
